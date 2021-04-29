@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { Product } from 'src/app/models/product';
+import { CartService } from 'src/app/services/cart.service';
  
 import { ProductService } from 'src/app/services/product.service';
 
@@ -10,13 +12,18 @@ import { ProductService } from 'src/app/services/product.service';
   styleUrls: ['./product.component.css']
 })
 export class ProductComponent implements OnInit {
- products:Product[]=[];
+ 
+  products:Product[]=[];
  dataLoaded=false;
+ filterText="";
 
  
    
   constructor(private productService:ProductService,
-    private activatedRoute:ActivatedRoute) { }
+    private activatedRoute:ActivatedRoute,
+    private toastrService:ToastrService,
+    private cartService:CartService
+    ) { }
 
   ngOnInit(): void {
     
@@ -24,8 +31,8 @@ export class ProductComponent implements OnInit {
 
       if(params["categoryId"]){
         this.getProductsByCategory(params["categoryId"])
-      }
-      else{
+       }
+        else{
         this.getProducts();
       }
 
@@ -39,14 +46,27 @@ export class ProductComponent implements OnInit {
 
   }
   getProducts(){
-this.productService.getProducts().subscribe(response=>{this.products=response.data});
- this.dataLoaded=true;
+    this.productService.getProducts().subscribe(response=>{this.products=response.data});
+    this.dataLoaded=true;
+   
   }
   getProductsByCategory(categoryId:number){
     this.productService.getProductsByCategory(categoryId).subscribe(response=>{this.products=response.data});
      this.dataLoaded=true;
-      }
- 
+  }
+  
+  addToCart(product:Product){
+    //console.log(product);
+
+    if(product.productId===1){
+      this.toastrService.error("Hata, bu ürün sepete eklenemez")
+    } else
+    {
+      this.toastrService.success("Sepete eklendi",product.productName);
+      this.cartService.addToCart(product);
+    }
+    
+  }
  
 
 }
